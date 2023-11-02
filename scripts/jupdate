@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 if ! git remote | grep -q "^upstream$"; then
-  git remote add upstream https://github.com/iburzynski/jambhala
+  git remote add upstream https://github.com/iburzynski/plutusDapp
 fi
 
 git fetch upstream --recurse-submodules

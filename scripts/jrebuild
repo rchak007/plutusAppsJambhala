@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
 cabal clean
-cabal build jambhala
+cabal build plutusDapp

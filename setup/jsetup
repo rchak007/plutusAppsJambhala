@@ -26,11 +26,11 @@ EOF
 echo "Welcome to Jambhala Setup Wizard..."
 
 if ! git remote | grep -q "^upstream$"; then
-  git remote add upstream https://github.com/iburzynski/jambhala
+  git remote add upstream https://github.com/iburzynski/plutusDapp
 fi
 
 PKGNAME_DEFAULT="$(basename "$(pwd)")"
-if [ "$PKGNAME_DEFAULT" != "jambhala" ]; then
+if [ "$PKGNAME_DEFAULT" != "plutusDapp" ]; then
   read -r -p "Project Name [$PKGNAME_DEFAULT]: " PKGNAME
   PKGNAME=${PKGNAME:-$PKGNAME_DEFAULT}
 
@@ -46,10 +46,10 @@ if [ "$PKGNAME_DEFAULT" != "jambhala" ]; then
   (
     set -x
     git ls-files | xargs -I _ sed _ -i \
-        -e "s#jambhala#$PKGNAME#g" \
-        -e "s#Ian Burzynski#$AUTHNAME#g" \
-        -e "s#23251244+iburzynski@users.noreply.github.com#$EMAIL#g"
-    mv "jambhala.cabal" "$PKGNAME.cabal"
+        -e "s#plutusDapp#$PKGNAME#g" \
+        -e "s#Chakravarti Raghavan#$AUTHNAME#g" \
+        -e "s#rchak1@aol.com#$EMAIL#g"
+    mv "plutusDapp.cabal" "$PKGNAME.cabal"
   ) 2>&1 | indent
 
   echo "Creating README..."
