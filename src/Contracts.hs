@@ -20,6 +20,7 @@ import Contracts.Samples.SimpleGuessing qualified as SimpleGuessing
 import Contracts.Samples.SimpleTyped qualified as SimpleTyped
 import Contracts.Samples.StateCounter qualified as StateCounter
 import Contracts.Samples.Vesting qualified as Vesting
+import Contracts.SeedPhraseManager as Seed
 import Jambhala.CLI.Types (JambContracts)
 
 -- Add your contracts to the `contracts` list below, i.e.:
@@ -28,7 +29,7 @@ import Jambhala.CLI.Types (JambContracts)
 --  ]
 contracts :: JambContracts
 contracts =
-  []
+  [Seed.exports]
 
 samples :: JambContracts
 samples =

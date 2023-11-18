@@ -14,7 +14,7 @@
 
 {-# HLINT ignore "Use newtype instead of data" #-}
 
-module Contracts.SeedPhraseManager where
+module Contracts.SeedPhraseManager (referenceSerialized) where
 
 -- ( SeedPhraseParam (..),
 --   SeedPhraseDatum (..),
@@ -34,10 +34,19 @@ module Contracts.SeedPhraseManager where
 -- import Utilities (wrap)
 
 -- chuck added
+
+-- i added
+-- import qualified Plutus.V2.Ledger.Api as Api
+
+import Cardano.Api
+import Codec.Serialise (serialise)
+import Data.ByteString.Base16 qualified as B16
+import Data.ByteString.Char8 qualified as C
+import Data.ByteString.Lazy qualified as LBS
+import Data.ByteString.Short qualified as SBS
 import Jambhala.Plutus
 import Jambhala.Utils
--- i added
-
+import Ledger (unValidatorScript)
 import Plutus.Script.Utils.V1.Typed.Scripts.Validators qualified as ScriptsV1
 import Plutus.Script.Utils.V2.Scripts qualified as V2UtilsScripts
 import Plutus.Script.Utils.V2.Typed.Scripts.Validators qualified as Scripts
@@ -48,10 +57,12 @@ import Plutus.V2.Ledger.Api
     TxInfo (),
     UnsafeFromData (unsafeFromBuiltinData),
     Validator,
+    fromCompiledCode,
     mkValidatorScript,
+    unValidatorScript,
   )
 import Plutus.V2.Ledger.Contexts (txSignedBy)
-import PlutusTx (CompiledCode, applyCode, compile, liftCode, makeLift, unstableMakeIsData)
+import PlutusTx (CompiledCode, applyCode, compile, liftCode, makeLift, unsafeFromBuiltinData, unstableMakeIsData)
 import PlutusTx.Prelude hiding (Semigroup (..))
 import Utilities.PlutusTx (wrap)
 import Prelude qualified as Haskell
@@ -135,32 +146,51 @@ compileScript spmParam =
         `applyCode` liftCode spmParam -- apply the result to the "lifted" argument
     )
 
+-- referenceInstance :: Scripts.Validator
+referenceInstance :: Validator
+-- referenceInstance = Api.Validator $ Api.fromCompiledCode $$(PlutusTx.compile [||wrap||])
+referenceInstance = Validator $ fromCompiledCode $$(PlutusTx.compile [||wrap||])
+  where
+    -- wrap l1 = Scripts.mkUntypedValidator $ mkRequestValidator (PlutusTx.unsafeFromBuiltinData l1)
+    wrap l1 = mkUntypedValidator $ mkRequestValidator (PlutusTx.unsafeFromBuiltinData l1)
+
+referenceSerialized :: Haskell.String
+referenceSerialized =
+  C.unpack $
+    B16.encode $
+      serialiseToCBOR
+        -- ((PlutusScriptSerialised $ SBS.toShort . LBS.toStrict $ serialise $ Api.unValidatorScript referenceInstance) :: PlutusScript PlutusScriptV2)
+        ((PlutusScriptSerialised $ SBS.toShort . LBS.toStrict $ serialise $ unValidatorScript referenceInstance) :: PlutusScript PlutusScriptV2)
+
 -- 4. Export Contract to Jambhala
 
 -- | Define `exports` value for use with `jamb` CLI.
-exports :: JambExports
-exports =
-  export
-    (defExports appliedScript)
-  where
-    -- { -- 1. With cardano-node running, use the `calc-time` script from cardano-cli-guru to get a POSIX time value
-    --   --    (add the `--plus MINUTES` option, replacing MINUTES with a number of minutes to add).
-    --   -- 2. Replace the placeholder POSIXTime value below with your POSIX time value.
-    --   -- 3. Note the NEW SLOT value for later use in transaction construction.
-    --   dataExports = [(
-    --               SeedPhraseDatum {
-    -- encryptedWordsWithIndex = "3a5039efcafd4c82c9169b35afb27a17673f6ed785ea087139a65a5d",
-    -- pInfoHash = "3a5039efcafd4c82c9169b35afb27a17673f6ed785ea087139a65a5d"} :: SeedPhraseDatum) `toJSONfile` "maturity"]
-    --   -- emulatorTest = test
-    -- }
+-- exports :: JambExports
+-- exports =
+--   export
+--     -- (defExports compileScript)
+--     (defExports referenceInstance)
 
-    -- The parameterized validator must be applied to a `PubKeyHash` argument before it can be exported.
-    appliedScript =
-      -- 4. Use the `key-hash` script from cardano-cli-guru to get the pubkey hash for a beneficiary address.
-      -- 5. Replace the placeholder hex string below with the beneficiary address pubkey hash.
-      -- compileScript sp1
-      compileScript
-        (SeedPhraseParam {pInfoHash = "3a5039efcafd4c82c9169b35afb27a17673f6ed785ea087139a65a5d"})
+-- (defExports appliedScript)
+-- where
+-- { -- 1. With cardano-node running, use the `calc-time` script from cardano-cli-guru to get a POSIX time value
+--   --    (add the `--plus MINUTES` option, replacing MINUTES with a number of minutes to add).
+--   -- 2. Replace the placeholder POSIXTime value below with your POSIX time value.
+--   -- 3. Note the NEW SLOT value for later use in transaction construction.
+--   dataExports = [(
+--               SeedPhraseDatum {
+-- encryptedWordsWithIndex = "3a5039efcafd4c82c9169b35afb27a17673f6ed785ea087139a65a5d",
+-- pInfoHash = "3a5039efcafd4c82c9169b35afb27a17673f6ed785ea087139a65a5d"} :: SeedPhraseDatum) `toJSONfile` "maturity"]
+--   -- emulatorTest = test
+-- }
+
+-- The parameterized validator must be applied to a `PubKeyHash` argument before it can be exported.
+-- appliedScript =
+-- 4. Use the `key-hash` script from cardano-cli-guru to get the pubkey hash for a beneficiary address.
+-- 5. Replace the placeholder hex string below with the beneficiary address pubkey hash.
+-- compileScript sp1
+-- compileScript
+--   (SeedPhraseParam {pInfoHash = "3a5039efcafd4c82c9169b35afb27a17673f6ed785ea087139a65a5d"})
 
 -- End of my additions
 
