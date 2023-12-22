@@ -14,6 +14,8 @@ https://github.com/rchak007/decentralSeedRecover
 
 Jambhala framework was used to develop the plutus code.
 
+https://github.com/iburzynski/jambhala was used as template to start.
+
 
 
 
