@@ -146,6 +146,8 @@ compileScript spmParam =
         `applyCode` liftCode spmParam -- apply the result to the "lifted" argument
     )
 
+-- https://github.com/spacebudz/wormhole/blob/main/src/onchain.hs
+--    the referenceInstance and referenceSerialized for parameterized .plutus was taken from wormhole onchain code
 -- referenceInstance :: Scripts.Validator
 referenceInstance :: Validator
 -- referenceInstance = Api.Validator $ Api.fromCompiledCode $$(PlutusTx.compile [||wrap||])
